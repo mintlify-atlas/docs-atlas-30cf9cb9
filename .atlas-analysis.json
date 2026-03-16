@@ -1,0 +1,95 @@
+{
+  "projectType": "framework",
+  "projectName": "Tema Zonaweb",
+  "projectDescription": "An Odoo 18 website theme and module for technology service companies, featuring a corporate website with services pages, portfolio, bidding/quote request system, and backend management views.",
+  "theme": "linden",
+  "primaryColor": "#0057FF",
+  "lightColor": "#00C2FF",
+  "darkColor": "#0B1F3A",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "installation", "quickstart"]
+          },
+          {
+            "group": "Website Pages",
+            "pages": [
+              "pages/homepage",
+              "pages/services",
+              "pages/portfolio",
+              "pages/about",
+              "pages/bidding"
+            ]
+          },
+          {
+            "group": "Bidding System",
+            "pages": [
+              "bidding/overview",
+              "bidding/form-submission",
+              "bidding/email-notifications",
+              "bidding/backend-management"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "customization/theme-colors",
+              "customization/css-variables",
+              "customization/assets"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "HTTP Routes",
+            "pages": [
+              "api/routes-overview",
+              "api/route-servicios",
+              "api/route-portafolio",
+              "api/route-nosotros",
+              "api/route-licencias",
+              "api/route-submit-bidding",
+              "api/route-bidding-status"
+            ]
+          },
+          {
+            "group": "Data Model",
+            "pages": [
+              "api/model-bidding-request",
+              "api/model-fields",
+              "api/model-states"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Corporate homepage with hero carousel, service cards, portfolio grid, pricing plans, and testimonials",
+    "Dedicated pages for Services, Portfolio, About Us, and Bidding/Quote Requests",
+    "Bidding request system with web form, automatic email confirmation, and Odoo backend management",
+    "Full Odoo backend integration with list, form, and kanban views for managing bidding requests",
+    "JSON API endpoint for checking bidding request status",
+    "Custom CSS theme with brand colors, animated counters, scroll reveal, and portfolio filters",
+    "Responsive design built on Odoo 18 website module with Bootstrap"
+  ],
+  "publicApiSurface": [
+    "GET /servicios — Renders the services page",
+    "GET /portafolio — Renders the portfolio page",
+    "GET /nosotros — Renders the about us page",
+    "GET /licencias — Renders the bidding/quote request page",
+    "POST /submit-bidding — Submits a new bidding/quote request (creates zonaweb.bidding.request record)",
+    "POST /api/bidding-status (JSON) — Returns current status and last update date of a bidding request",
+    "zonaweb.bidding.request Odoo model — Core data model for bidding/quote requests",
+    "BiddingRequest.action_confirm() — Transitions request to confirmed state",
+    "BiddingRequest.action_approve() — Transitions request to approved state",
+    "BiddingRequest.action_reject() — Transitions request to rejected state"
+  ]
+}
