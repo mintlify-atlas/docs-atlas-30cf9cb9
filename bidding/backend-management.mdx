@@ -1,0 +1,127 @@
+---
+title: 'Backend management'
+description: 'How to find, review, and process bidding requests in the Odoo backend — including list, form, and kanban views, action buttons, and chatter tracking.'
+keywords: ['backend', 'licitaciones', 'solicitudes', 'kanban', 'odoo', 'zonaweb']
+---
+
+All bidding requests submitted through the website are visible and manageable in the Odoo backend.
+
+## Navigation
+
+Go to **Sales > Licitaciones > Solicitudes**.
+
+The menu is registered under `sale.sale_menu_root` with a **Licitaciones** parent and a **Solicitudes** child that opens the `action_zonaweb_bidding_request` window action. The action loads the list, form, and kanban views for `zonaweb.bidding.request`.
+
+## List view
+
+The default list view displays the following columns:
+
+| Column | Field | Notes |
+|---|---|---|
+| Referencia | `name` | Sequence reference, e.g. `BID/00001`. |
+| Empresa | `company_name` | Name of the prospect's company. |
+| Contacto | `contact_name` | Name of the person who submitted the form. |
+| Email | `email` | Prospect's email address. |
+| Tipo de Servicio | `service_type` | Rendered as the selection label. |
+| Estado | `state` | Rendered as a colored badge (see below). |
+| Creado | `create_date` | Date and time the form was submitted. |
+
+### State badge colors
+
+| State | Color |
+|---|---|
+| `approved` | Green (success) |
+| `confirmed` | Orange (warning) |
+| `rejected` | Red (danger) |
+| `draft` | Default (no decoration) |
+
+## Form view
+
+Opening a record shows the full form with a status bar and action buttons in the header.
+
+### Action buttons
+
+<Note>
+  Buttons are shown or hidden based on the current `state` value. Only the relevant actions are visible at any given stage.
+</Note>
+
+| Button | Style | Visible when | Method called |
+|---|---|---|---|
+| Confirmar | Primary (blue) | `state == 'draft'` | `action_confirm()` |
+| Aprobar | Success (green) | `state == 'confirmed'` | `action_approve()` |
+| Rechazar | Danger (red) | `state in ['draft', 'confirmed']` | `action_reject()` |
+
+The status bar below the buttons shows all four states in order: **Borrador → Confirmado → Aprobado / Rechazado**.
+
+### Field layout
+
+The form sheet is divided into two column groups followed by two full-width text areas:
+
+**Left column**
+- Nombre de la Empresa (`company_name`)
+- Nombre de Contacto (`contact_name`)
+- Correo Electrónico (`email`)
+- Teléfono (`phone`)
+
+**Right column**
+- Tipo de Servicio (`service_type`)
+- Presupuesto Estimado (`estimated_budget`)
+- Cronograma Estimado (`estimated_timeline`)
+- Sector de la Empresa (`company_sector`)
+
+**Full-width fields**
+- Descripción del Proyecto (`project_description`)
+- Requerimientos Específicos (`specific_requirements`)
+
+The reference number (`name`) is displayed as a read-only `<h1>` title at the top of the sheet.
+
+### Chatter
+
+The form includes the standard Odoo chatter (`message_follower_ids`, `activity_ids`, `message_ids`). Because the model inherits `mail.thread`, state transitions and changes to tracked fields are automatically logged as chatter messages. Tracked fields are:
+
+- `company_name`
+- `contact_name`
+- `email`
+- `state`
+
+This provides a full audit trail without any additional configuration.
+
+## Kanban view
+
+The kanban view is available alongside the list and form views. Each card shows:
+
+- **Title:** reference number (`name`)
+- **Subtitle:** company name (`company_name`)
+- **Body:** contact name and email
+- **Footer badge:** state with the same color scheme as the list view
+
+```
+┌─────────────────────────────┐
+│ BID/00003                   │
+│ Acme Corp                   │
+│                             │
+│ María González              │
+│ maria@acme.com              │
+│                             │
+│ [Confirmado]                │  ← orange badge
+└─────────────────────────────┘
+```
+
+The badge decoration rules are identical to the list view (`decoration-success`, `decoration-warning`, `decoration-danger`, `decoration-muted` for draft).
+
+## Typical workflow
+
+<Steps>
+  <Step title="New requests arrive as Borrador">
+    When the website form is submitted, a record is automatically created with state `draft`. No manual action is required to create records.
+  </Step>
+  <Step title="Review the submission">
+    Open the record from the list or kanban view. Read the project description, budget, and requirements to assess the request.
+  </Step>
+  <Step title="Confirm to signal intake">
+    Click **Confirmar** to move the request to `confirmed`. This signals that the team has seen and accepted the inquiry for further evaluation. The state change is logged in the chatter.
+  </Step>
+  <Step title="Approve or reject">
+    After internal evaluation, click **Aprobar** to approve or **Rechazar** to decline. Both transitions are logged in the chatter with the timestamp and the user who made the change.
+  </Step>
+</Steps>

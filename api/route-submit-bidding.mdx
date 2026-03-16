@@ -1,0 +1,153 @@
+---
+title: 'POST /submit-bidding'
+description: 'Submits a new bidding request and creates a zonaweb.bidding.request record.'
+sidebarTitle: '/submit-bidding'
+icon: 'paper-plane'
+---
+
+Accepts a form submission from the `/licencias` page, creates a `zonaweb.bidding.request` record in the database, sends a confirmation email to the applicant, and renders a thank-you page.
+
+## Endpoint
+
+```
+POST /submit-bidding
+```
+
+| Property | Value |
+|----------|-------|
+| Type | `http` |
+| Auth | `public` |
+| Website context | yes (`website=True`) |
+| CSRF | **required** (`csrf=True`) |
+| Content-Type | `application/x-www-form-urlencoded` |
+
+<Warning>
+This endpoint requires a valid Odoo CSRF token. Requests that omit or provide an invalid `csrf_token` field are rejected with HTTP 403. The token is automatically embedded in the form rendered by [GET /licencias](/api/route-licencias).
+</Warning>
+
+## Request parameters
+
+All parameters are sent as HTML form fields (`application/x-www-form-urlencoded`).
+
+### Required fields
+
+<ParamField body="company_name" type="string" required>
+  Legal name of the company submitting the request.
+</ParamField>
+
+<ParamField body="contact_name" type="string" required>
+  Full name of the primary contact person.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email address of the contact person. Used to send the confirmation email.
+</ParamField>
+
+<ParamField body="service_type" type="string" required>
+  Category of service being requested. Accepted values:
+
+  | Value | Description |
+  |-------|-------------|
+  | `software` | Custom software development |
+  | `infrastructure` | IT infrastructure |
+  | `support` | Technical support |
+  | `security` | Cybersecurity |
+  | `consulting` | IT consulting |
+  | `other` | Any other service |
+</ParamField>
+
+<ParamField body="project_description" type="string" required>
+  Free-text description of the project or need.
+</ParamField>
+
+### Optional fields
+
+<ParamField body="phone" type="string">
+  Phone number of the contact person.
+</ParamField>
+
+<ParamField body="estimated_budget" type="number">
+  Estimated budget in the default currency. The controller converts this value to a `float`; if the field is empty or omitted it defaults to `0.0`.
+</ParamField>
+
+<ParamField body="estimated_timeline" type="string">
+  Preferred project timeline. Accepted values:
+
+  | Value | Description |
+  |-------|-------------|
+  | `normal` | Standard timeline |
+  | `urgent` | Urgent delivery required |
+  | `flexible` | No fixed deadline |
+
+  Defaults to `False` (no preference) if omitted.
+</ParamField>
+
+<ParamField body="company_sector" type="string">
+  Industry sector of the submitting company. Accepted values:
+
+  | Value | Description |
+  |-------|-------------|
+  | `retail` | Retail |
+  | `manufacturing` | Manufacturing |
+  | `services` | Services |
+  | `technology` | Technology |
+  | `healthcare` | Healthcare |
+  | `education` | Education |
+  | `finance` | Finance |
+  | `other` | Other |
+
+  Defaults to `False` (not specified) if omitted.
+</ParamField>
+
+<ParamField body="specific_requirements" type="string">
+  Any additional technical or business requirements.
+</ParamField>
+
+## Side effects
+
+1. **Record creation** — A `zonaweb.bidding.request` record is created via `sudo()`. The new record's sequence name follows the pattern `BID/NNNNN` (e.g. `BID/00001`).
+2. **Confirmation email** — The template `zonaweb_website.email_template_bidding_confirmation` is sent to the contact. If the email send fails for any reason, the error is logged as a warning and the request is **not** rolled back — the record is still saved.
+
+## Response
+
+### Success
+
+HTTP 200 — renders the `zonaweb_website.bidding_thankyou` template with the following context:
+
+<ResponseField name="bidding_id" type="string">
+  The sequence name of the newly created bidding record (e.g. `BID/00001`).
+</ResponseField>
+
+### Error
+
+If an exception is raised during record creation, the controller logs the error and renders the `website.http_error` template with:
+
+<ResponseField name="error_message" type="string">
+  A fixed Spanish-language message: `"Error al procesar tu solicitud. Por favor, inténtalo de nuevo."`
+</ResponseField>
+
+<Note>
+Email send failures are **non-fatal**. A failed email does not trigger the error response — the thank-you page is still shown.
+</Note>
+
+## Example
+
+```bash cURL
+curl -X POST https://your-odoo-instance.com/submit-bidding \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "csrf_token=<YOUR_CSRF_TOKEN>" \
+  -d "company_name=Acme+Corp" \
+  -d "contact_name=Jane+Doe" \
+  -d "email=jane.doe@acme.com" \
+  -d "phone=%2B1-555-0100" \
+  -d "service_type=software" \
+  -d "project_description=We+need+a+custom+ERP+integration." \
+  -d "estimated_budget=15000" \
+  -d "estimated_timeline=normal" \
+  -d "company_sector=technology" \
+  -d "specific_requirements=Must+integrate+with+SAP."
+```
+
+<Warning>
+You cannot obtain a valid `csrf_token` without first loading the form page from the same session. In practice this endpoint is called by the browser after the user submits the form on `/licencias`.
+</Warning>

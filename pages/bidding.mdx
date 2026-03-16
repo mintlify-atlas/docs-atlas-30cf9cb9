@@ -1,0 +1,175 @@
+---
+title: "Bidding page"
+description: "The /licencias page (bidding_page template) — a public quote request form that creates a zonaweb.bidding.request record and sends an email confirmation."
+keywords: ["bidding", "licencias", "quote", "form", "licitación", "CSRF", "email confirmation"]
+---
+
+The bidding page is registered at `/licencias` and rendered by the `bidding_page` template. It is accessible from the main navigation menu under **Licitaciones** (sequence 40).
+
+## Page hero
+
+| Field | Value |
+|---|---|
+| Label | "Solicitar Propuesta" |
+| Heading | "Solicitar Licitación" |
+| Subheading | "Obtén una propuesta personalizada para tus necesidades de servicios informáticos en menos de 24 horas." |
+
+## Page layout
+
+The page body uses a two-column grid (`zw-bidding__grid`):
+
+- **Left column:** Bidding process steps and "Why choose us?" benefits
+- **Right column:** The submission form
+
+## Bidding process (left column)
+
+<Steps>
+  <Step title="Envío de Solicitud">
+    Complete the form with project details.
+  </Step>
+  <Step title="Confirmación">
+    Receive an email confirmation within 24 hours.
+  </Step>
+  <Step title="Análisis de Requisitos">
+    The team evaluates your specific needs.
+  </Step>
+  <Step title="Propuesta Detallada">
+    Receive a full proposal with timelines and costs.
+  </Step>
+  <Step title="Aprobación e Inicio">
+    On approval, the project starts immediately.
+  </Step>
+</Steps>
+
+**Why choose us? (benefit items):**
+
+| Icon | Title | Detail |
+|---|---|---|
+| trophy | Calidad Garantizada | 10+ years and 120+ successful projects |
+| clock | Cumplimiento de Plazos | Agile methodologies for on-time delivery |
+| phone | Soporte Continuo | Assistance during and after the project |
+| line-chart | Resultados Medibles | Direct impact on productivity and efficiency |
+
+## Form fields
+
+The form `POST`s to `/submit-bidding`.
+
+### Required fields
+
+| Field name | Input type | Label | Placeholder |
+|---|---|---|---|
+| `company_name` | `text` | Empresa | "Tu empresa" |
+| `contact_name` | `text` | Contacto | "Tu nombre" |
+| `email` | `email` | Email | "tu@empresa.com" |
+| `project_description` | `textarea` (4 rows) | Descripción del Proyecto | Brief description of the project or need |
+| `service_type` | `select` | Tipo de Servicio | See options below |
+
+### Optional fields
+
+| Field name | Input type | Label | Placeholder / notes |
+|---|---|---|---|
+| `phone` | `tel` | Teléfono | "+53 12345678" |
+| `estimated_budget` | `number` | Presupuesto Estimado | `0.00`, `step="0.01"`, `min="0"` |
+| `estimated_timeline` | `select` | Plazo Estimado | See options below |
+| `company_sector` | `select` | Sector | See options below |
+| `specific_requirements` | `textarea` (3 rows) | Requisitos Específicos | Technical or specific requirements |
+
+### `service_type` options
+
+Defined in both the HTML form and the `BiddingRequest` model (`zonaweb.bidding.request`):
+
+| Value | Label |
+|---|---|
+| `software` | Desarrollo de Software |
+| `infrastructure` | Infraestructura de Redes |
+| `support` | Soporte Técnico |
+| `security` | Seguridad Informática |
+| `other` | Otro |
+
+<Note>
+The model defines an additional `consulting` (Consultoría) option that is not exposed in the HTML form's `<select>`. It can be set directly from the Odoo backend.
+</Note>
+
+### `estimated_timeline` options
+
+| Value | HTML label | Model label |
+|---|---|---|
+| `urgent` | Urgente (menos de 1 mes) | Urgente (1-2 semanas) |
+| `normal` | Normal (1-3 meses) | Normal (2-4 semanas) |
+| `flexible` | Flexible (más de 3 meses) | Flexible (1-3 meses) |
+
+<Warning>
+The timeline option labels differ slightly between the HTML form and the model definition. The values (`urgent`, `normal`, `flexible`) are consistent and are what gets stored in the database.
+</Warning>
+
+### `company_sector` options
+
+| Value | Label |
+|---|---|
+| `retail` | Retail |
+| `manufacturing` | Manufactura |
+| `services` | Servicios |
+| `technology` | Tecnología |
+| `healthcare` | Salud |
+| `education` | Educación |
+| `finance` | Finanzas |
+| `other` | Otro |
+
+## CSRF protection
+
+The form includes a hidden CSRF token rendered server-side by Odoo's QWeb engine:
+
+```xml
+<input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+```
+
+The `/submit-bidding` route is declared with `csrf=True`, so Odoo validates the token on every `POST` request. Requests without a valid token are rejected before the controller logic runs.
+
+## Form submission flow
+
+<Steps>
+  <Step title="User submits the form">
+    The browser `POST`s all field values plus the CSRF token to `/submit-bidding`.
+  </Step>
+  <Step title="Record creation">
+    The `submit_bidding` controller creates a `zonaweb.bidding.request` record via `sudo()`, assigning an auto-generated sequence reference (e.g., `BID/0001`).
+  </Step>
+  <Step title="Email confirmation">
+    The controller attempts to send the `email_template_bidding_confirmation` mail template to the submitter. If sending fails, the error is logged as a warning and the flow continues.
+  </Step>
+  <Step title="Thank-you page">
+    On success, the visitor is redirected to the `bidding_thankyou` template, which displays the reference number (`bidding_id`) returned from the record.
+  </Step>
+  <Step title="Error handling">
+    If record creation itself fails, the controller renders `website.http_error` with a user-facing message.
+  </Step>
+</Steps>
+
+## Thank-you page
+
+After a successful submission, the `bidding_thankyou` template is rendered with:
+
+| Element | Value |
+|---|---|
+| Icon | `fa-check` (green) |
+| Heading | "¡Solicitud Recibida!" |
+| Body | Team will review and contact within 24 hours |
+| Reference | The auto-generated `name` field value from `BiddingRequest` |
+| Return link | "Volver al Inicio" → `/` |
+
+## Route details
+
+```python
+# Page render
+@http.route('/licencias', type='http', auth='public', website=True)
+def bidding(self, **kwargs):
+    return request.render('zonaweb_website.bidding_page')
+
+# Form submission
+@http.route('/submit-bidding', type='http', auth='public',
+            methods=['POST'], website=True, csrf=True)
+def submit_bidding(self, **kwargs):
+    ...
+```
+
+Both routes are public and website-aware. No authentication is required to view or submit the form.

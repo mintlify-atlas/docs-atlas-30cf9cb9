@@ -1,0 +1,102 @@
+---
+title: "About page"
+description: "The /nosotros page (nosotros_page template) — company story, core values, animated stats band, and team member cards."
+keywords: ["about", "nosotros", "company", "values", "team", "stats", "history"]
+---
+
+The about page is registered at `/nosotros` and rendered by the `nosotros_page` template. It is accessible from the main navigation menu (sequence 30).
+
+## Page hero
+
+| Field | Value |
+|---|---|
+| Label | "Sobre Nosotros" |
+| Heading | "Más de 10 años impulsando la transformación digital" |
+| Subheading | Brief description of the team's passion for technology |
+
+## Company intro
+
+The intro section uses a two-column grid (`zw-about-intro__grid`): an image (`about-image.jpg`) on the left and text content on the right.
+
+A floating stat overlay on the image displays:
+
+| Field | Value |
+|---|---|
+| Number | `2013` |
+| Label | Año de fundación |
+
+**Narrative text:**
+- First paragraph: Zonaweb's mission to democratize high-quality technology solutions, combining technical expertise with business understanding
+- Second paragraph: Multidisciplinary team working with the latest technologies to develop scalable, sustainable solutions
+
+## Core values
+
+Four values are listed in `zw-about-values`:
+
+<CardGroup cols={2}>
+  <Card title="Innovación constante" icon="lightbulb">
+    Adoptamos las últimas tecnologías para ofrecer soluciones de vanguardia.
+  </Card>
+  <Card title="Compromiso total" icon="handshake">
+    Cada proyecto es tratado con la misma dedicación y profesionalismo.
+  </Card>
+  <Card title="Transparencia" icon="eye">
+    Comunicación clara y honesta en cada etapa del proyecto.
+  </Card>
+  <Card title="Resultados medibles" icon="chart-line">
+    Nos enfocamos en métricas concretas que impactan tu negocio.
+  </Card>
+</CardGroup>
+
+## Stats band
+
+A dark-background band (`zw-stats-band`) displays four animated counters. Each `[data-count]` element animates from 0 to its target when scrolled into view (see the counter behavior in `zonaweb_script.js`).
+
+| `data-count` | Suffix | Label |
+|---|---|---|
+| `10` | `+` | Años de experiencia |
+| `120` | `+` | Proyectos completados |
+| `85` | `+` | Clientes activos |
+| `98` | `%` | Satisfacción del cliente |
+
+<Note>
+The homepage hero shows three counters (10+, 120+, 98%). The about page stats band adds a fourth: **85+ clientes activos**.
+</Note>
+
+## Team members
+
+Four cards in `zw-team-grid`, each with a photo, name, role, and short bio. These cards are also wired to the scroll reveal observer.
+
+| Name | Role | Bio summary |
+|---|---|---|
+| Carlos Rodríguez | Director General | 15 years in technology project management and digital transformation |
+| Ana Martínez | CTO | Software architecture and cloud solutions specialist with AWS and Azure certifications |
+| Miguel López | Jefe de Seguridad | Cybersecurity expert with CISSP and CEH certifications |
+| Laura García | Lead Developer | Full-stack developer specialising in React, Python, and distributed systems |
+
+**Images used (reusing hero images):**
+
+| Team member | Image file |
+|---|---|
+| Carlos Rodríguez | `hero1.jpg` |
+| Ana Martínez | `hero2.jpg` |
+| Miguel López | `hero3.jpg` |
+| Laura García | `service1.jpg` |
+
+## Bottom CTA
+
+- **Heading:** "¿Quieres unirte a nuestro equipo?"
+- **Body:** Open invitation for technology talent
+- **Button:** "Contáctanos" → `/contactus`
+
+<Tip>
+The about page CTA links to `/contactus` (Odoo's built-in contact form) rather than `/licencias`. This is intentional — the target audience for recruitment inquiries is different from the bidding audience.
+</Tip>
+
+## Route details
+
+```python
+@http.route('/nosotros', type='http', auth='public', website=True)
+def nosotros(self, **kwargs):
+    return request.render('zonaweb_website.nosotros_page')
+```

@@ -1,0 +1,160 @@
+---
+title: "Portfolio page"
+description: "The /portafolio page (portafolio_page template) — a filterable grid of six completed projects across software, app, infrastructure, and security categories."
+keywords: ["portfolio", "projects", "filter", "portafolio", "TMS", "Reservas 360", "ERP", "cloud", "security audit"]
+---
+
+The portfolio page is registered at `/portafolio` and rendered by the `portafolio_page` template. It is accessible from the main navigation menu (sequence 20).
+
+## Page hero
+
+| Field | Value |
+|---|---|
+| Label | "Nuestro Portafolio" |
+| Heading | "Proyectos exitosos que demuestran nuestra experiencia" |
+| Subheading | Story of technological transformation across industries |
+
+## Filter buttons
+
+Five filter buttons (`zw-filter-btn`) appear above the project grid. The **Todos** button is active by default.
+
+| Button label | `data-filter` value |
+|---|---|
+| Todos | `all` |
+| Desarrollo Web | `software` |
+| Aplicaciones | `app` |
+| Infraestructura | `infra` |
+| Seguridad | `security` |
+
+## Project cards
+
+Each card (`zw-pf-card`) carries a `data-cat` attribute used by the JS filter. The grid contains six projects:
+
+### TMS — Sistema de Gestión de Transporte
+
+| Field | Value |
+|---|---|
+| Category | `software` (Desarrollo Web) |
+| Image | `portfolio1.jpg` |
+| Description | Integral transport and logistics management with real-time tracking and route optimisation |
+| Stack | React, Node.js, MongoDB |
+| Industry | Logística |
+| Duration | 8 meses |
+| Team | Equipo de 6 |
+
+### Reservas 360
+
+| Field | Value |
+|---|---|
+| Category | `app` (Aplicación) |
+| Image | `portfolio2.jpg` |
+| Description | Online booking platform with payment integration and inventory management for a hotel chain |
+| Stack | Vue.js, PHP, MySQL |
+| Industry | Hotelero |
+| Duration | 6 meses |
+| Team | Equipo de 5 |
+
+### Sistema ERP Personalizado
+
+| Field | Value |
+|---|---|
+| Category | `app` (Aplicación) |
+| Image | `portfolio3.jpg` |
+| Description | Comprehensive ERP for manufacturing covering inventory, production, and finance |
+| Stack | .NET, C#, SQL Server |
+| Industry | Manufactura |
+| Duration | 9 meses |
+| Team | Equipo de 8 |
+
+### Migración a Cloud
+
+| Field | Value |
+|---|---|
+| Category | `infra` (Infraestructura) |
+| Image | `service2.jpg` |
+| Description | Full migration from on-premise to AWS for a financial services company |
+| Stack | AWS, Docker, Kubernetes |
+| Industry | Finanzas |
+| Duration | 4 meses |
+| Team | Equipo de 4 |
+
+### Auditoría de Seguridad
+
+| Field | Value |
+|---|---|
+| Category | `security` (Seguridad) |
+| Image | `service4.jpg` |
+| Description | Comprehensive security system and audit implementation to protect sensitive health data |
+| Stack | Firewall, SIEM, Cifrado |
+| Industry | Salud |
+| Duration | 3 meses |
+| Team | Equipo de 3 |
+
+### Portal de Gestión Educativa
+
+| Field | Value |
+|---|---|
+| Category | `software` (Desarrollo Web) |
+| Image | `hero1.jpg` |
+| Description | Educational platform with course management, student tracking, assessments, and automated reporting |
+| Stack | Django, PostgreSQL, Redis |
+| Industry | Educación |
+| Duration | 7 meses |
+| Team | Equipo de 5 |
+
+## JS filter behavior
+
+The filter is implemented in `zonaweb_script.js`:
+
+```javascript
+const filterBtns = document.querySelectorAll('.zw-filter-btn');
+const pfCards    = document.querySelectorAll('.zw-pf-card[data-cat]');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.dataset.filter;
+        pfCards.forEach(card => {
+            const show = cat === 'all' || card.dataset.cat === cat;
+            card.style.display = show ? 'block' : 'none';
+        });
+    });
+});
+```
+
+**How it works:**
+
+<Steps>
+  <Step title="Click a filter button">
+    The clicked button receives the `active` class; all others lose it.
+  </Step>
+  <Step title="Read the filter value">
+    The `data-filter` attribute of the clicked button is read as `cat`.
+  </Step>
+  <Step title="Show or hide cards">
+    Each `.zw-pf-card[data-cat]` is shown (`display: block`) if `cat === 'all'` or if the card's `data-cat` matches `cat`. Non-matching cards are set to `display: none`.
+  </Step>
+</Steps>
+
+<Note>
+The filter is purely client-side. All six cards are always present in the DOM; visibility is toggled with `display`.
+</Note>
+
+## Scroll reveal
+
+All `.zw-pf-card` elements are also wired to the scroll reveal observer defined in `zonaweb_script.js`. Cards start at `opacity: 0` and `translateY(24px)`, then animate in with a staggered delay of `i * 0.08s` as they enter the viewport.
+
+## Bottom CTA
+
+- **Heading:** "¿Listo para tu próximo proyecto?"
+- **Body:** Invites visitors to share their idea
+- **Button:** "Iniciar proyecto" → `/licencias`
+
+## Route details
+
+```python
+@http.route('/portafolio', type='http', auth='public', website=True)
+def portafolio(self, **kwargs):
+    return request.render('zonaweb_website.portafolio_page')
+```

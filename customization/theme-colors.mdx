@@ -1,0 +1,154 @@
+---
+title: "Theme colors"
+description: "Understand and override the three brand CSS variables that drive the Zonaweb color system."
+---
+
+The Zonaweb theme defines three brand colors as CSS custom properties (variables). Every component — buttons, cards, hero sections, gradients, focus rings — inherits these values, so changing them in one place updates the entire site.
+
+## Brand variables
+
+The three variables are injected into `<head>` by the `theme_layout` template in `views/website_templates.xml`:
+
+```xml views/website_templates.xml
+<template id="theme_layout"
+          key="zonaweb_website.theme_layout"
+          name="Zonaweb Theme Layout"
+          inherit_id="website.layout">
+    <xpath expr="//head" position="inside">
+        <style>
+            :root {
+                --primary:   #0057FF;
+                --secondary: #0B1F3A;
+                --accent:    #00C2FF;
+            }
+        </style>
+    </xpath>
+</template>
+```
+
+| Variable | Value | Role |
+|---|---|---|
+| `--primary` | `#0057FF` | Main brand blue — buttons, links, active states, icon fills |
+| `--secondary` | `#0B1F3A` | Dark navy — hero and page-hero backgrounds, headings, footer |
+| `--accent` | `#00C2FF` | Cyan highlight — gradient endpoints, animated stat numbers, feature icons |
+
+<Note>
+`--accent` is identical to the `--cyan` variable defined in `zonaweb_style.css`. Both names resolve to the same color; `--accent` is the semantic alias used in the template, while `--cyan` is the low-level palette name used throughout the CSS.
+</Note>
+
+## How the variables propagate
+
+The `theme_layout` template inherits `website.layout` via XPath and appends a `<style>` block inside `<head>`. Because the block targets `:root`, the variables cascade to every element on the page. The CSS file at `static/src/css/zonaweb_style.css` then references them throughout:
+
+```css
+/* Buttons use --primary */
+.btn-zw-primary {
+    background: var(--blue);   /* resolves to --primary's value */
+    color: var(--white);
+}
+
+/* Hero title gradient uses both --primary and --accent */
+.zw-hero__title .accent {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Plans section uses --secondary as background */
+.zw-plans {
+    background: var(--navy);   /* --secondary value */
+}
+```
+
+## Additional CSS palette variables
+
+Beyond the three brand variables, `zonaweb_style.css` defines a full palette in `:root`:
+
+```css static/src/css/zonaweb_style.css
+:root {
+    --navy:        #0B1F3A;   /* same as --secondary */
+    --navy-mid:    #112847;
+    --navy-light:  #1a3a5c;
+    --blue:        #0057FF;   /* same as --primary */
+    --blue-hover:  #0044CC;   /* darkened blue for hover states */
+    --cyan:        #00C2FF;   /* same as --accent */
+    --white:       #FFFFFF;
+    --off-white:   #F4F7FC;
+    --gray-100:    #EEF2F8;
+    --gray-200:    #D8E2F0;
+    --gray-500:    #7A8FA8;
+    --gray-700:    #3D5270;
+    --text:        #0B1F3A;
+    --text-light:  #5A7090;
+    --shadow-sm:   0 2px 8px rgba(0,50,120,0.08);
+    --shadow-md:   0 8px 30px rgba(0,50,120,0.12);
+    --shadow-lg:   0 20px 60px rgba(0,50,120,0.18);
+    --radius:      12px;
+    --radius-lg:   20px;
+    --transition:  0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+## Overriding colors for a deployment
+
+You have two options depending on how broadly you want the change to apply.
+
+### Option 1 — Modify the theme_layout template
+
+Edit `views/website_templates.xml` directly. This is the recommended approach when you are forking the module for a client.
+
+```xml
+<style>
+    :root {
+        --primary:   #E63946;   /* replace with your brand color */
+        --secondary: #1D3557;
+        --accent:    #457B9D;
+    }
+</style>
+```
+
+After saving, restart Odoo and upgrade the module (`-u zonaweb_website`) to apply the change.
+
+### Option 2 — Add custom CSS via a new asset
+
+Add a new CSS file and register it after `zonaweb_style.css` in `__manifest__.py`. Because it loads last, its `:root` declarations override the defaults without touching the core files.
+
+<Steps>
+  <Step title="Create the override file">
+    Create `static/src/css/custom.css` in the module:
+
+    ```css static/src/css/custom.css
+    :root {
+        --primary:   #E63946;
+        --secondary: #1D3557;
+        --accent:    #457B9D;
+        --blue:      #E63946;   /* keep in sync with --primary */
+        --blue-hover:#C1121F;
+        --cyan:      #457B9D;   /* keep in sync with --accent */
+    }
+    ```
+  </Step>
+  <Step title="Register the file in __manifest__.py">
+    Add the new file to `web.assets_frontend` after the existing CSS entry:
+
+    ```python __manifest__.py
+    'assets': {
+        'web.assets_frontend': [
+            'zonaweb_website/static/src/css/zonaweb_style.css',
+            'zonaweb_website/static/src/css/custom.css',   # overrides
+        ],
+    },
+    ```
+  </Step>
+  <Step title="Restart and upgrade">
+    Restart the Odoo server and upgrade the module:
+
+    ```bash
+    ./odoo-bin -u zonaweb_website -d <your_database>
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+When overriding colors, update both the semantic alias (`--primary`) and its palette counterpart (`--blue`) together. Much of the CSS references `var(--blue)` and `var(--navy)` directly rather than going through the three semantic variables defined in the template.
+</Tip>

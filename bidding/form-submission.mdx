@@ -1,0 +1,160 @@
+---
+title: 'Form submission'
+description: 'How the /submit-bidding POST route processes the website form, validates fields, creates the record, and renders the thank-you page.'
+keywords: ['submit-bidding', 'form', 'csrf', 'licitación', 'zonaweb']
+---
+
+When a visitor submits the bidding form at `/licencias`, the browser POSTs to `/submit-bidding`. The controller creates a `zonaweb.bidding.request` record, sends a confirmation email, and renders a thank-you page with the new reference number.
+
+## Route definition
+
+```python
+@http.route('/submit-bidding', type='http', auth='public',
+            methods=['POST'], website=True, csrf=True)
+def submit_bidding(self, **kwargs):
+    ...
+```
+
+| Attribute | Value |
+|---|---|
+| Path | `POST /submit-bidding` |
+| Auth | `public` (no login required) |
+| CSRF | Enabled — the form must include a `csrf_token` hidden field |
+| Type | `http` (standard form POST, not JSON) |
+
+<Note>
+  The form template injects the CSRF token automatically via `t-att-value="request.csrf_token()"`.
+  Any POST that omits or sends an invalid token is rejected by Odoo before reaching the controller.
+</Note>
+
+## Form fields
+
+The following table lists every field accepted by the route. Required fields are validated at the HTML level (`required` attribute) and at the Odoo model level.
+
+<ParamField body="company_name" type="Char" required>
+  Legal or trading name of the prospect's company. Maps to `zonaweb.bidding.request.company_name`.
+</ParamField>
+
+<ParamField body="contact_name" type="Char" required>
+  Full name of the person submitting the request. Maps to `contact_name`.
+</ParamField>
+
+<ParamField body="email" type="Char" required>
+  Email address used for the confirmation message and for backend follow-up. Maps to `email`.
+</ParamField>
+
+<ParamField body="phone" type="Char">
+  Optional phone number. Maps to `phone`.
+</ParamField>
+
+<ParamField body="service_type" type="Selection" required>
+  The category of service being requested. Maps to `service_type`. Accepted values:
+
+  | Value | Label |
+  |---|---|
+  | `software` | Desarrollo de Software |
+  | `infrastructure` | Infraestructura de Redes |
+  | `support` | Soporte Técnico |
+  | `security` | Seguridad Informática |
+  | `consulting` | Consultoría |
+  | `other` | Otro |
+</ParamField>
+
+<ParamField body="project_description" type="Text" required>
+  Free-text description of the project or requirement. Maps to `project_description`.
+</ParamField>
+
+<ParamField body="estimated_budget" type="Float">
+  Numeric value representing the prospect's estimated budget. The controller casts the raw string to `float`; if the field is empty it defaults to `0.0`. Maps to `estimated_budget`.
+</ParamField>
+
+<ParamField body="estimated_timeline" type="Selection">
+  Expected delivery urgency. Maps to `estimated_timeline`. Accepted values:
+
+  | Value | Label |
+  |---|---|
+  | `urgent` | Urgente (1-2 semanas) |
+  | `normal` | Normal (2-4 semanas) |
+  | `flexible` | Flexible (1-3 meses) |
+
+  If the field is empty or absent, the value is stored as `False`.
+</ParamField>
+
+<ParamField body="company_sector" type="Selection">
+  Industry sector of the prospect's company. Maps to `company_sector`. Accepted values:
+
+  | Value | Label |
+  |---|---|
+  | `retail` | Retail |
+  | `manufacturing` | Manufactura |
+  | `services` | Servicios |
+  | `technology` | Tecnología |
+  | `healthcare` | Salud |
+  | `education` | Educación |
+  | `finance` | Finanzas |
+  | `other` | Otro |
+
+  If the field is empty or absent, the value is stored as `False`.
+</ParamField>
+
+<ParamField body="specific_requirements" type="Text">
+  Optional additional technical or specific requirements. Maps to `specific_requirements`.
+</ParamField>
+
+## Record creation and reference sequence
+
+The controller creates the record using `sudo()` so public users can write to the model:
+
+```python
+bidding_request = request.env['zonaweb.bidding.request'].sudo().create({
+    'company_name':          kwargs.get('company_name'),
+    'contact_name':          kwargs.get('contact_name'),
+    'email':                 kwargs.get('email'),
+    'phone':                 kwargs.get('phone'),
+    'service_type':          kwargs.get('service_type'),
+    'project_description':   kwargs.get('project_description'),
+    'estimated_budget':      float(estimated_budget) if estimated_budget else 0.0,
+    'estimated_timeline':    kwargs.get('estimated_timeline') or False,
+    'company_sector':        kwargs.get('company_sector') or False,
+    'specific_requirements': kwargs.get('specific_requirements'),
+})
+```
+
+The `create` method on the model calls `ir.sequence.next_by_code('zonaweb.bidding.request')` to assign the `name` field. The sequence uses:
+
+- **Prefix:** `BID/`
+- **Padding:** 5 digits
+
+This produces references such as `BID/00001`, `BID/00002`, and so on.
+
+## Error handling
+
+The entire create-and-send block is wrapped in a `try/except`:
+
+```python
+try:
+    # ... record creation and email sending ...
+except Exception as e:
+    _logger.error("Error al procesar licitación: %s", str(e))
+    return request.render('website.http_error', {
+        'error_message': 'Error al procesar tu solicitud. Por favor, inténtalo de nuevo.',
+    })
+```
+
+If record creation fails (for example, a missing required field that bypassed frontend validation), Odoo renders the standard `website.http_error` template with a Spanish-language error message.
+
+<Warning>
+  Email send failures are caught by an **inner** `try/except` and only logged as a warning. They do **not** cause the outer handler to fire — the record is created and the thank-you page is shown regardless.
+</Warning>
+
+## Success response
+
+On success, the controller renders the `bidding_thankyou` template and passes the new reference number:
+
+```python
+return request.render('zonaweb_website.bidding_thankyou', {
+    'bidding_id': bidding_request.name,
+})
+```
+
+The thank-you page displays the reference number (e.g. `BID/00003`) and a message confirming that the team will respond within 24 hours.

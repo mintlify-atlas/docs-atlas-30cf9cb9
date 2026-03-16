@@ -1,0 +1,85 @@
+---
+title: "Introduction"
+description: "Tema Zonaweb is a professional Odoo 18 website theme and module for technology service companies."
+---
+
+# Tema Zonaweb
+
+Tema Zonaweb (`zonaweb_website`) is a complete Odoo 18 module that transforms your Odoo instance into a professional corporate website for technology service companies. It provides a fully styled, responsive website with dedicated pages for services, portfolio, team, and a built-in bidding/quote request system.
+
+<CardGroup cols={2}>
+  <Card title="Quick Installation" icon="rocket" href="/installation">
+    Get the module installed and running on your Odoo 18 instance
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Set up your corporate website in minutes
+  </Card>
+  <Card title="Bidding System" icon="file-invoice" href="/bidding/overview">
+    Learn how the quote request workflow works end-to-end
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/routes-overview">
+    Explore HTTP routes and the data model
+  </Card>
+</CardGroup>
+
+## What's included
+
+The module delivers a complete corporate website experience out of the box:
+
+<CardGroup cols={2}>
+  <Card title="Homepage" icon="house">
+    Hero carousel, service highlights, portfolio preview, pricing plans, testimonials, and animated statistics
+  </Card>
+  <Card title="Services page" icon="briefcase">
+    Full-detail pages for Software Development, Network Infrastructure, Technical Support, and Cybersecurity
+  </Card>
+  <Card title="Portfolio page" icon="images">
+    Filterable project grid showcasing completed work across industries
+  </Card>
+  <Card title="About page" icon="users">
+    Company story, core values, stats band, and team member cards
+  </Card>
+  <Card title="Bidding page" icon="clipboard-list">
+    Public quote request form with automatic email confirmation and Odoo backend tracking
+  </Card>
+  <Card title="Backend views" icon="table-columns">
+    List, form, and kanban views in the Odoo backend to manage all incoming bidding requests
+  </Card>
+</CardGroup>
+
+## Key features
+
+- **Brand colors** — Custom CSS variables (`--primary: #0057FF`, `--secondary: #0B1F3A`, `--accent: #00C2FF`) applied globally across all templates
+- **Animated UI** — Hero carousel with auto-play, scroll-reveal animations on cards, and animated counters
+- **Bidding workflow** — Four-state lifecycle (Draft → Confirmed → Approved/Rejected) with email notifications and chatter logging
+- **JSON API** — A `/api/bidding-status` endpoint for programmatic status lookups
+- **Odoo integration** — Inherits `website`, `website_sale`, `mail`, and `sale_management` to slot seamlessly into any Odoo 18 installation
+
+## Module identity
+
+| Field | Value |
+|---|---|
+| Technical name | `zonaweb_website` |
+| Version | `18.0.1.0.0` |
+| Category | Theme/Corporate |
+| License | LGPL-3 |
+| Author | Zonaweb |
+| Website | [www.zonaweb.com](https://www.zonaweb.com) |
+| Odoo dependencies | `website`, `website_sale`, `mail`, `sale_management` |
+
+## Next steps
+
+<Steps>
+  <Step title="Install the module">
+    Follow the [installation guide](/installation) to add `zonaweb_website` to your Odoo instance.
+  </Step>
+  <Step title="Activate the website">
+    Run through the [quickstart](/quickstart) to publish all pages and configure the navigation menu.
+  </Step>
+  <Step title="Customize the theme">
+    Adapt the [CSS variables and assets](/customization/theme-colors) to match your brand.
+  </Step>
+  <Step title="Manage bidding requests">
+    Learn how the [bidding system](/bidding/overview) captures and processes incoming quote requests.
+  </Step>
+</Steps>

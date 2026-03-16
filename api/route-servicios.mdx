@@ -1,0 +1,43 @@
+---
+title: 'GET /servicios'
+description: 'Renders the services page of the Zonaweb website.'
+sidebarTitle: '/servicios'
+icon: 'wrench'
+---
+
+Returns the services page rendered with the `zonaweb_website.servicios_page` QWeb template.
+
+## Endpoint
+
+```
+GET /servicios
+```
+
+| Property | Value |
+|----------|-------|
+| Type | `http` |
+| Auth | `public` |
+| Website context | yes (`website=True`) |
+| CSRF | not applicable (GET) |
+
+## Request parameters
+
+This route accepts no defined parameters. Any extra query string values are captured by `**kwargs` and silently ignored.
+
+## Response
+
+Returns an HTTP 200 response with the rendered HTML page.
+
+| Condition | Response |
+|-----------|----------|
+| Always | HTML — `zonaweb_website.servicios_page` template |
+
+## Example
+
+```bash cURL
+curl -X GET https://your-odoo-instance.com/servicios
+```
+
+<Note>
+Because this is a standard website page, browsers receive the full Odoo website layout (header, footer, assets) as part of the rendered template. The response is not JSON.
+</Note>

@@ -1,0 +1,134 @@
+---
+title: 'Installation'
+description: 'Install the Tema Zonaweb module (zonaweb_website) on your Odoo 18 instance.'
+keywords: ['zonaweb', 'odoo', 'installation', 'module', 'corporate theme']
+---
+
+## Prerequisites
+
+Before installing `zonaweb_website`, make sure you have:
+
+- An Odoo **18** instance (the module is versioned `18.0.1.0.0` and is not compatible with earlier series)
+- The following built-in Odoo modules already installed:
+
+| Module | Purpose |
+|---|---|
+| `website` | Core website builder |
+| `website_sale` | E-commerce and shop features |
+| `mail` | Messaging and chatter (required by `BiddingRequest`) |
+| `sale_management` | Sales menu where bidding requests appear |
+
+<Note>
+All four dependencies are standard Odoo modules and are available in any Odoo 18 Community or Enterprise install. They will be installed automatically if they are not already present.
+</Note>
+
+---
+
+## Install via the Odoo Apps UI
+
+<Steps>
+  <Step title="Activate developer mode">
+    Go to **Settings → General Settings**, scroll to the bottom, and click **Activate the developer mode**.
+
+    Alternatively, append `?debug=1` to any Odoo URL.
+  </Step>
+
+  <Step title="Upload the module">
+    Place the `zonaweb_website` folder inside one of the directories listed in your Odoo `addons_path` configuration, then restart the Odoo server so it picks up the new path.
+  </Step>
+
+  <Step title="Update the module list">
+    Navigate to **Apps**, then click **Update Apps List** in the top menu. Confirm the dialog.
+  </Step>
+
+  <Step title="Search and install">
+    Clear the default **Apps** filter from the search bar, search for `Tema Zonaweb`, and click **Install** on the matching card.
+
+    Odoo will install all missing dependencies automatically.
+  </Step>
+</Steps>
+
+---
+
+## Install via command line
+
+This method is suitable for server deployments and CI pipelines.
+
+<Steps>
+  <Step title="Clone the repository into your addons path">
+    ```bash
+    git clone https://github.com/zonaweb/zonaweb_website.git /path/to/odoo/custom_addons/zonaweb_website
+    ```
+
+    Replace `/path/to/odoo/custom_addons/` with the actual path that is registered in your `odoo.conf` under `addons_path`.
+  </Step>
+
+  <Step title="Verify the addons path">
+    Open your `odoo.conf` and confirm `zonaweb_website`'s parent directory is included:
+
+    ```ini
+    [options]
+    addons_path = /usr/lib/python3/dist-packages/odoo/addons,/path/to/odoo/custom_addons
+    ```
+  </Step>
+
+  <Step title="Install the module with -i">
+    Restart Odoo and install the module in one command:
+
+    ```bash
+    python odoo-bin -c /etc/odoo/odoo.conf -d your_database -i zonaweb_website
+    ```
+
+    To install as part of a broader initialization:
+
+    ```bash
+    python odoo-bin -c /etc/odoo/odoo.conf -d your_database \
+      -i website,website_sale,mail,sale_management,zonaweb_website
+    ```
+  </Step>
+
+  <Step title="Update an existing installation">
+    If the module is already installed and you have pulled new changes, use `-u` to update:
+
+    ```bash
+    python odoo-bin -c /etc/odoo/odoo.conf -d your_database -u zonaweb_website
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Always back up your database before running `-i` or `-u` in a production environment.
+</Warning>
+
+---
+
+## Verify the installation
+
+After a successful install, the module registers four public pages and adds a **Licitaciones** sub-menu under **Sales** in the Odoo backend.
+
+**Check that each page is accessible and published:**
+
+| Page | URL | Published |
+|---|---|---|
+| Servicios | `/servicios` | Yes |
+| Portafolio | `/portafolio` | Yes |
+| Nosotros | `/nosotros` | Yes |
+| Solicitar Licitación | `/licencias` | Yes |
+
+Open each URL in a browser (without logging in) to confirm they return the correct page. All four are set to `is_published = True` and `website_indexed = True` by default.
+
+**Check the backend menu:**
+
+1. Log in to the Odoo backend.
+2. Navigate to **Sales → Licitaciones → Solicitudes**.
+3. The list view of `zonaweb.bidding.request` records should appear (empty on a fresh install).
+
+<Tip>
+If any page returns a 404, verify that the `website` controller routes (`/servicios`, `/portafolio`, `/nosotros`, `/licencias`) are registered by restarting the server after installation.
+</Tip>
+
+---
+
+## License
+
+`zonaweb_website` is released under the **LGPL-3** license. See the `LICENSE` file in the repository root for the full text.

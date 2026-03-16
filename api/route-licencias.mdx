@@ -1,0 +1,45 @@
+---
+title: 'GET /licencias'
+description: 'Renders the bidding request form page.'
+sidebarTitle: '/licencias'
+icon: 'file-pen'
+---
+
+Returns the bidding request form rendered with the `zonaweb_website.bidding_page` QWeb template. This is the entry point for visitors who want to submit a project bidding request.
+
+## Endpoint
+
+```
+GET /licencias
+```
+
+| Property | Value |
+|----------|-------|
+| Type | `http` |
+| Auth | `public` |
+| Website context | yes (`website=True`) |
+| CSRF | not applicable (GET) |
+
+## Request parameters
+
+This route accepts no defined parameters. Any extra query string values are captured by `**kwargs` and silently ignored.
+
+## Response
+
+Returns an HTTP 200 response with the rendered HTML form page.
+
+| Condition | Response |
+|-----------|----------|
+| Always | HTML — `zonaweb_website.bidding_page` template |
+
+The rendered page contains an HTML form that POSTs to [`/submit-bidding`](/api/route-submit-bidding). The form includes a hidden `csrf_token` field injected by Odoo's website layer.
+
+## Example
+
+```bash cURL
+curl -X GET https://your-odoo-instance.com/licencias
+```
+
+<Tip>
+To submit the bidding request after the user fills in the form, see [POST /submit-bidding](/api/route-submit-bidding).
+</Tip>

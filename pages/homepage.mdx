@@ -1,0 +1,160 @@
+---
+title: "Homepage"
+description: "The Zonaweb homepage (zonaweb_homepage) — a full-page template with hero carousel, services, portfolio preview, pricing plans, CTA, and testimonials."
+keywords: ["homepage", "hero", "carousel", "services", "portfolio", "plans", "testimonials"]
+---
+
+The homepage extends Odoo's built-in `website.homepage` template through the `zonaweb_homepage` template key. It replaces the default `#wrap` content with six full-width sections.
+
+## Hero section
+
+The hero is split into a two-column grid: content on the left and an image carousel on the right.
+
+### Content column
+
+| Element | Value |
+|---|---|
+| Label | "Soluciones Tecnológicas Profesionales" |
+| Heading | "Transformamos tu empresa con tecnología de vanguardia" |
+| Subheading | Brief summary of the four service areas |
+| Primary CTA | "Solicitar propuesta" → `/licencias` |
+| Secondary CTA | "Ver servicios" → `/servicios` |
+
+### Animated stats
+
+Three counters animate from 0 to their target value when scrolled into view (see [JS behaviors](#js-behaviors)):
+
+| `data-count` | Suffix | Label |
+|---|---|---|
+| `10` | `+` | Años de experiencia |
+| `120` | `+` | Proyectos completados |
+| `98` | `%` | Clientes satisfechos |
+
+### Image carousel
+
+Three slides cycle automatically. Each slide contains a single `<img>` tag:
+
+| Slide | File | Alt text |
+|---|---|---|
+| 1 (active) | `hero1.jpg` | Desarrollo de software |
+| 2 | `hero2.jpg` | Infraestructura |
+| 3 | `hero3.jpg` | Seguridad |
+
+Dot navigation buttons (`zw-carousel-dot`) let visitors jump to any slide manually.
+
+### ISO 27001 badge
+
+A floating badge is positioned over the carousel visual:
+
+```html
+<div class="zw-hero__badge">
+  <div class="zw-hero__badge-icon"><i class="fa fa-shield"></i></div>
+  <div>
+    <div class="zw-hero__badge-num">ISO 27001</div>
+    <div class="zw-hero__badge-text">Seguridad certificada</div>
+  </div>
+</div>
+```
+
+## Services section
+
+Four service cards arranged in `zw-services-grid`. Each card links back to `/servicios`.
+
+<CardGroup cols={2}>
+  <Card title="Desarrollo de Software" icon="code" href="/pages/services">
+    Aplicaciones y sistemas a medida. Image: `service1.jpg`.
+  </Card>
+  <Card title="Infraestructura de Redes" icon="sitemap" href="/pages/services">
+    Diseño e implementación de redes robustas. Image: `service2.jpg`.
+  </Card>
+  <Card title="Soporte Técnico" icon="phone" href="/pages/services">
+    Asistencia remota y presencial. Image: `service3.jpg`.
+  </Card>
+  <Card title="Seguridad Informática" icon="shield" href="/pages/services">
+    Protección de activos digitales. Image: `service4.jpg`.
+  </Card>
+</CardGroup>
+
+## Portfolio section
+
+A light-background section (`zw-section--light`) previews two featured projects.
+
+| Card | Tag | Image | Description |
+|---|---|---|---|
+| TMS — Sistema de Gestión | Desarrollo Web | `portfolio1.jpg` | Transport and logistics management with real-time tracking |
+| Reservas 360 | Aplicación | `portfolio2.jpg` | Online booking platform with payment integration |
+
+A centered "Ver todos los proyectos" button links to `/portafolio`.
+
+## Plans section
+
+Two pricing tiers displayed side by side in `zw-plans-grid`. Both link to `/shop`.
+
+<CardGroup cols={2}>
+  <Card title="Plan Estándar — $49/month" icon="check">
+    - Protección antivirus básica
+    - Soporte por correo
+    - Actualizaciones mensuales
+    - Monitoreo básico
+  </Card>
+  <Card title="Plan Premium — $79/month" icon="star">
+    - Protección antivirus avanzada
+    - Soporte técnico 24/7
+    - Actualizaciones en tiempo real
+    - Monitoreo proactivo
+    - Respaldo en la nube
+  </Card>
+</CardGroup>
+
+The Premium card carries the `zw-plan-card--featured` modifier class, rendering it visually highlighted.
+
+## CTA section
+
+A full-width banner (`zw-cta`) prompts visitors to request a custom proposal:
+
+- **Heading:** "¿Necesitas una solución personalizada?"
+- **Body:** explains the bidding workflow
+- **Button:** "Solicitar licitación" → `/licencias`
+
+## Testimonials section
+
+A single testimonial card is rendered statically:
+
+| Field | Value |
+|---|---|
+| Quote | "Zonaweb transformó completamente nuestra infraestructura tecnológica..." |
+| Author | Juan Díaz |
+| Role | Director de TI, Empresa XYZ |
+| Avatar | Initials `JD` rendered as a styled `div` |
+
+<Note>
+The testimonial block renders a single static card. To add more testimonials, extend the `zw-testimonials` section in the `zonaweb_homepage` template.
+</Note>
+
+## JS behaviors
+
+All interactive behaviors are initialized by `zonaweb_script.js` on `DOMContentLoaded`.
+
+### Carousel auto-play
+
+```javascript
+setInterval(() => goTo(current + 1), 4500);
+```
+
+The active slide advances every **4500 ms**. Clicking a dot calls `goTo(i)` directly. The `active` class is toggled on both the slide (`zw-carousel-slide`) and the corresponding dot (`zw-carousel-dot`).
+
+### Animated counters
+
+Elements with a `data-count` attribute are observed with `IntersectionObserver` (threshold `0.5`). When 50 % of the element is visible, a `setInterval` increments the displayed number every 16 ms until it reaches the target:
+
+```javascript
+const step = Math.ceil(end / (duration / 16)); // duration = 1800 ms
+```
+
+### Scroll reveal animations
+
+Cards (`zw-service-card`, `zw-portfolio-card`, `zw-plan-card`) start invisible and shifted 24 px downward. An `IntersectionObserver` (threshold `0.1`) sets `opacity: 1` and `transform: translateY(0)` when each card enters the viewport. Stagger delay increases by `0.08s` per card index.
+
+### Navbar shadow
+
+When `window.scrollY > 20` a `box-shadow` is applied to the main navbar; it is removed when the user scrolls back to the top.

@@ -1,0 +1,97 @@
+---
+title: 'Email notifications'
+description: 'The automatic confirmation email sent to prospects after a bidding request is submitted, including the template definition and failure handling.'
+keywords: ['email', 'confirmation', 'template', 'licitación', 'zonaweb']
+---
+
+Immediately after a bidding request record is created, the controller sends an automatic confirmation email to the prospect using an Odoo `mail.template`.
+
+## Template reference
+
+| Attribute | Value |
+|---|---|
+| External ID | `zonaweb_website.email_template_bidding_confirmation` |
+| Model | `zonaweb.bidding.request` |
+| Defined in | `data/website_data.xml` (loaded with `noupdate="1"`) |
+
+## Subject
+
+```
+Confirmación de Solicitud de Licitación - ${object.name}
+```
+
+The `${object.name}` expression is evaluated at send time and resolves to the record's sequence reference, for example:
+
+```
+Confirmación de Solicitud de Licitación - BID/00001
+```
+
+## Sender and recipient
+
+| Field | Expression | Example |
+|---|---|---|
+| From | `${object.env.company.email or 'noreply@zonaweb.com'}` | `info@example.com` or `noreply@zonaweb.com` |
+| To | `${object.email}` | The email the prospect entered on the form |
+
+<Tip>
+  The sender address falls back to `noreply@zonaweb.com` if the Odoo company record does not have an email configured. Set a company email at **Settings > Companies** to use a branded address.
+</Tip>
+
+## Email body
+
+The confirmation email greets the contact by name, lists three key details from the submission, and commits to a 24-hour response:
+
+```
+Estimado/a {contact_name},
+
+Gracias por tu interés en los servicios de Zonaweb. Hemos recibido
+tu solicitud con los siguientes detalles:
+
+  • Número de referencia: {name}          (e.g. BID/00001)
+  • Empresa:              {company_name}
+  • Tipo de servicio:     {service_type}
+
+Nuestro equipo te contactará en menos de 24 horas con una propuesta
+detallada.
+
+Atentamente,
+El equipo de Zonaweb
+```
+
+## How the template is triggered
+
+After creating the record, the controller resolves the template by its external ID and calls `send_mail` with `force_send=True` so the message is delivered immediately rather than queued:
+
+```python
+template = request.env.ref(
+    'zonaweb_website.email_template_bidding_confirmation'
+)
+template.sudo().send_mail(bidding_request.id, force_send=True)
+```
+
+`sudo()` is required because the request runs under the `public` user, who does not have mail-send permissions.
+
+## Failure handling
+
+The send call is wrapped in its own `try/except` block, separate from the record-creation error handler:
+
+```python
+try:
+    template = request.env.ref(
+        'zonaweb_website.email_template_bidding_confirmation'
+    )
+    template.sudo().send_mail(bidding_request.id, force_send=True)
+except Exception as mail_error:
+    _logger.warning("No se pudo enviar email: %s", mail_error)
+```
+
+Key behaviours:
+
+- The exception is caught and logged at **WARNING** level — it does not propagate.
+- The bidding request record has already been saved at this point.
+- The form submission is considered successful: the visitor sees the thank-you page with their reference number regardless of whether the email was delivered.
+- The warning appears in the Odoo server log under the `ZonawebWebsite` logger name.
+
+<Warning>
+  If emails are consistently failing, check the outgoing mail server configuration at **Settings > Technical > Email > Outgoing Mail Servers**. Failures are silent to the end user, so monitor the server log or set up an alert on WARNING-level log entries.
+</Warning>

@@ -1,0 +1,143 @@
+---
+title: "Services page"
+description: "The /servicios page (servicios_page template) — detailed rows for Software Development, Network Infrastructure, Technical Support, and Cybersecurity."
+keywords: ["services", "software development", "network infrastructure", "technical support", "cybersecurity", "servicios"]
+---
+
+The services page is registered at `/servicios` and rendered by the `servicios_page` template. It is accessible from the main navigation menu (sequence 10).
+
+## Page hero
+
+| Field | Value |
+|---|---|
+| Label | "Nuestros Servicios" |
+| Heading | "Soluciones tecnológicas a la medida de tu empresa" |
+| Subheading | Overview of the four service areas |
+
+## Service rows
+
+Each service is presented as a full-width alternating row (`zw-service-row`). Even-numbered rows carry the `zw-service-row--reverse` modifier, placing the image on the right.
+
+### Desarrollo de Software
+
+**Subtitle:** Soluciones a medida
+
+Creates custom applications and systems tailored to business processes.
+
+**Benefits:**
+- Optimización de procesos y aumento de productividad
+- Integración con sistemas existentes
+- Escalabilidad para acompañar el crecimiento
+- Soporte técnico continuo y actualizaciones
+
+**Technology tags:**
+
+| Tag | Style |
+|---|---|
+| Python | Blue highlight |
+| JavaScript | Blue highlight |
+| React | Blue highlight |
+| Node.js | Blue highlight |
+| Java | Default |
+| .NET | Default |
+| SQL | Default |
+
+**CTA:** "Solicitar cotización" → `/licencias`
+
+---
+
+### Infraestructura de Redes
+
+**Subtitle:** Diseño e implementación
+
+Designs and maintains network infrastructure for connectivity, security, and performance.
+
+**Benefits:**
+- Mayor rendimiento y estabilidad de la red
+- Seguridad avanzada contra amenazas externas
+- Optimización del ancho de banda
+- Escalabilidad para futuras expansiones
+
+**Technology tags:**
+
+| Tag | Style |
+|---|---|
+| Cisco | Blue highlight |
+| VMware | Blue highlight |
+| AWS | Blue highlight |
+| Firewall | Default |
+| VPN | Default |
+| SD-WAN | Default |
+
+**CTA:** "Solicitar cotización" → `/licencias`
+
+---
+
+### Soporte Técnico
+
+**Subtitle:** Asistencia integral
+
+Provides remote and on-site support to keep systems running and teams trained.
+
+**Benefits:**
+- Respuesta rápida a incidentes
+- Disponibilidad 24/7 para emergencias
+- Mantenimiento preventivo
+- Capacitación a tu equipo interno
+
+**Technology tags:**
+
+| Tag | Style |
+|---|---|
+| Remoto | Blue highlight |
+| Presencial | Blue highlight |
+| Preventivo | Default |
+| Capacitación | Default |
+
+**CTA:** "Desde $500/mes" → `/licencias`
+
+---
+
+### Seguridad Informática
+
+**Subtitle:** Protección integral
+
+Protects digital assets with next-generation security including antivirus, firewalls, and intrusion detection.
+
+**Benefits:**
+- Protección contra malware y ransomware
+- Cumplimiento de normativas de seguridad
+- Respuesta ante incidentes
+- Auditorías periódicas de seguridad
+
+**Technology tags:**
+
+| Tag | Style |
+|---|---|
+| Antivirus | Blue highlight |
+| Firewall | Blue highlight |
+| VPN | Blue highlight |
+| Cifrado | Default |
+| Backup | Default |
+
+**CTA:** "Desde $800/mes" → `/licencias`
+
+---
+
+## Bottom CTA
+
+A full-width CTA banner at the bottom of the page:
+
+- **Heading:** "¿No encuentras lo que buscas?"
+- **Body:** Invites visitors to request a custom solution
+- **Button:** "Solicitar licitación" → `/licencias`
+
+## Route details
+
+```python
+@http.route('/servicios', type='http', auth='public', website=True)
+def servicios(self, **kwargs):
+    return request.render('zonaweb_website.servicios_page')
+```
+
+The route is public and website-aware. No authentication is required.

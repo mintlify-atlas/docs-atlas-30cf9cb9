@@ -1,0 +1,67 @@
+---
+title: 'HTTP routes overview'
+description: 'All HTTP routes exposed by the Tema Zonaweb Odoo module.'
+sidebarTitle: 'Overview'
+icon: 'route'
+---
+
+The `ZonawebWebsite` controller registers six HTTP routes. Five are standard website page routes that render Odoo QWeb templates; one is a JSON-RPC API endpoint for programmatic status checks.
+
+<Info>
+All routes use `auth='public'`, so no login is required to access them. The five `type='http'` routes also set `website=True`, enabling Odoo's website context (layout, multi-website support, etc.).
+</Info>
+
+## Route summary
+
+| Method | Path | Type | Auth | CSRF | Description |
+|--------|------|------|------|------|-------------|
+| GET | `/servicios` | http | public | — | Renders the services page |
+| GET | `/portafolio` | http | public | — | Renders the portfolio page |
+| GET | `/nosotros` | http | public | — | Renders the about us page |
+| GET | `/licencias` | http | public | — | Renders the bidding request form |
+| POST | `/submit-bidding` | http | public | required | Submits a bidding request |
+| POST | `/api/bidding-status` | json | public | — | Returns the status of a bidding request |
+
+## Page routes
+
+The first four routes are read-only pages that accept no meaningful query parameters. They render a fixed QWeb template and return an HTML response.
+
+<Columns cols={2}>
+  <Card title="GET /servicios" icon="wrench" href="/api/route-servicios">
+    Services page — lists the services offered.
+  </Card>
+  <Card title="GET /portafolio" icon="images" href="/api/route-portafolio">
+    Portfolio page — showcases completed projects.
+  </Card>
+  <Card title="GET /nosotros" icon="users" href="/api/route-nosotros">
+    About us page — company information.
+  </Card>
+  <Card title="GET /licencias" icon="file-pen" href="/api/route-licencias">
+    Bidding form page — entry point for bidding requests.
+  </Card>
+</Columns>
+
+## Action routes
+
+<Columns cols={2}>
+  <Card title="POST /submit-bidding" icon="paper-plane" href="/api/route-submit-bidding">
+    Accepts a form submission, creates a `zonaweb.bidding.request` record, and sends a confirmation email.
+  </Card>
+  <Card title="POST /api/bidding-status" icon="circle-check" href="/api/route-bidding-status">
+    JSON-RPC endpoint. Returns the current state and last-update timestamp for a bidding request by ID.
+  </Card>
+</Columns>
+
+## Authentication and CSRF
+
+All routes use `auth='public'`. This means:
+
+- Requests from unauthenticated visitors are accepted.
+- Odoo's public user is used for database operations that don't call `sudo()`.
+- Both controllers that write data call `sudo()` explicitly.
+
+The `/submit-bidding` route sets `csrf=True` (the default for `type='http'` POST routes). Any HTML form that POSTs to this endpoint must include the Odoo CSRF token in a hidden field named `csrf_token`.
+
+<Warning>
+The `/api/bidding-status` route uses `type='json'`, which follows the JSON-RPC 2.0 envelope format. It does **not** use the standard HTML form CSRF mechanism.
+</Warning>

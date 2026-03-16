@@ -1,0 +1,231 @@
+---
+title: "Static assets"
+description: "How static files (CSS, JavaScript, images) are registered and how to replace or extend them."
+---
+
+Zonaweb registers all its static assets through Odoo's asset bundle system defined in `__manifest__.py`. Understanding this structure lets you add custom styles, replace scripts, or swap out images without modifying core module files.
+
+## Asset bundle registration
+
+The module registers assets in two separate bundles:
+
+```python __manifest__.py
+'assets': {
+    'web.assets_frontend': [
+        # CSS — loaded on every frontend page
+        'zonaweb_website/static/src/css/zonaweb_style.css',
+    ],
+    'website.assets_frontend': [
+        # JS — loaded only in the website/eCommerce context
+        'zonaweb_website/static/src/js/zonaweb_script.js',
+    ],
+},
+```
+
+<Note>
+The CSS uses `web.assets_frontend` (not `website.assets_frontend`) so that it loads on all frontend pages, including those outside the Odoo website builder context. The JS uses `website.assets_frontend` because it relies on the website DOM structure and carousel elements.
+</Note>
+
+### Bundle summary
+
+| Bundle | File | Purpose |
+|---|---|---|
+| `web.assets_frontend` | `static/src/css/zonaweb_style.css` | All theme styles — variables, layout, components, animations |
+| `website.assets_frontend` | `static/src/js/zonaweb_script.js` | Hero carousel, scroll reveal, portfolio filters, animated counters, navbar shadow |
+
+## Image assets
+
+All images live under `static/src/img/` and are referenced directly by path in `views/website_templates.xml`.
+
+### Hero images
+
+The homepage hero uses a three-slide carousel:
+
+| File | Alt text | Used by |
+|---|---|---|
+| `hero1.jpg` | Desarrollo de software | Homepage hero slide 1, team card placeholder |
+| `hero2.jpg` | Infraestructura | Homepage hero slide 2, team card placeholder |
+| `hero3.jpg` | Seguridad | Homepage hero slide 3, team card placeholder |
+
+Example markup in `website_templates.xml`:
+
+```xml
+<div class="zw-carousel-slide active">
+    <img src="/zonaweb_website/static/src/img/hero1.jpg" alt="Desarrollo de software"/>
+</div>
+<div class="zw-carousel-slide">
+    <img src="/zonaweb_website/static/src/img/hero2.jpg" alt="Infraestructura"/>
+</div>
+<div class="zw-carousel-slide">
+    <img src="/zonaweb_website/static/src/img/hero3.jpg" alt="Seguridad"/>
+</div>
+```
+
+### Service images
+
+| File | Used by |
+|---|---|
+| `service1.jpg` | Services grid card 1 (Software Development), services detail page |
+| `service2.jpg` | Services grid card 2 (Network Infrastructure), services detail page |
+| `service3.jpg` | Services grid card 3 (Technical Support), services detail page |
+| `service4.jpg` | Services grid card 4 (Security), services detail page |
+
+### Portfolio images
+
+| File | Used by |
+|---|---|
+| `portfolio1.jpg` | Homepage portfolio grid — TMS project; portfolio full page |
+| `portfolio2.jpg` | Homepage portfolio grid — Reservas 360; portfolio full page |
+| `portfolio3.jpg` | Portfolio full page — ERP system |
+
+### Other images
+
+| File | Used by |
+|---|---|
+| `about-image.jpg` | About page intro section |
+| `bidding-image.jpg` | Bidding/quote request page |
+| `contact-image.jpg` | Contact-related sections |
+| `logo.png` | Theme logo asset |
+
+## Odoo Apps listing assets
+
+The `static/description/` directory contains assets used by the Odoo Apps marketplace listing. These are declared in `__manifest__.py` under the `images` key:
+
+```python __manifest__.py
+'images': [
+    'static/description/banner.png',
+    'static/description/theme_preview.png',
+],
+```
+
+<Note>
+`banner.png` and `theme_preview.png` are not served to website visitors. They appear only on the Odoo Apps module listing page. The actual `static/description/` directory contains an `index.html` description file for the listing.
+</Note>
+
+## SCSS file
+
+The module includes a SCSS source file at `static/scss/zonaweb_style.scss`. It is **not** registered in `__manifest__.py` and is therefore not compiled or served at runtime. It serves as a development reference and build source with SCSS variables and mixins that correspond to the compiled CSS:
+
+```scss static/scss/zonaweb_style.scss
+$primary-color:   #00539F;
+$secondary-color: #003d75;
+$accent-color:    #00A3E0;
+$text-dark:       #333;
+$text-light:      #777;
+$bg-light:        #f8f9fa;
+$bg-white:        #ffffff;
+
+@mixin card-style {
+    background-color: $bg-white;
+    border-radius: 15px;
+    box-shadow: $shadow;
+    transition: all 0.3s;
+    &:hover {
+        transform: translateY(-10px);
+        box-shadow: $shadow-hover;
+    }
+}
+```
+
+<Warning>
+The SCSS variable values (`$primary-color: #00539F`) are older draft values and differ from the final colors in `zonaweb_style.css` (`--blue: #0057FF`). Treat the SCSS file as a structural template rather than a source of truth for color values.
+</Warning>
+
+## How to add custom CSS
+
+<Steps>
+  <Step title="Create your stylesheet">
+    Add a new file, for example `static/src/css/custom.css`, inside the module.
+
+    ```css static/src/css/custom.css
+    /* Override brand colors */
+    :root {
+        --blue:      #E63946;
+        --blue-hover:#C1121F;
+        --navy:      #1D3557;
+        --cyan:      #457B9D;
+    }
+
+    /* Add custom component styles */
+    .zw-hero {
+        min-height: 80vh;
+    }
+    ```
+  </Step>
+  <Step title="Register it in __manifest__.py">
+    Add the file path to `web.assets_frontend` after the core stylesheet so it loads last and can override any rule:
+
+    ```python __manifest__.py
+    'assets': {
+        'web.assets_frontend': [
+            'zonaweb_website/static/src/css/zonaweb_style.css',
+            'zonaweb_website/static/src/css/custom.css',
+        ],
+    },
+    ```
+  </Step>
+  <Step title="Restart and upgrade">
+    Apply changes with:
+
+    ```bash
+    ./odoo-bin -u zonaweb_website -d <your_database>
+    ```
+
+    Then clear your browser cache to force the updated bundle to load.
+  </Step>
+</Steps>
+
+## How to replace hero images
+
+Hero and content images are referenced by static paths in `views/website_templates.xml`. To swap them out:
+
+<Steps>
+  <Step title="Add the new images">
+    Copy your replacement images into `static/src/img/`. Use the same filenames to replace existing images, or choose new names if you want to preserve the originals.
+  </Step>
+  <Step title="Update the src paths in website_templates.xml">
+    Find the `<img>` tags and update the `src` attributes:
+
+    ```xml
+    <!-- Before -->
+    <img src="/zonaweb_website/static/src/img/hero1.jpg" alt="Desarrollo de software"/>
+
+    <!-- After -->
+    <img src="/zonaweb_website/static/src/img/my-hero-image.jpg" alt="Your description"/>
+    ```
+  </Step>
+  <Step title="Upgrade the module">
+    Odoo serves static files directly, so image swaps take effect after a server restart. For XML template changes, upgrade the module:
+
+    ```bash
+    ./odoo-bin -u zonaweb_website -d <your_database>
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+Images are displayed at fixed aspect ratios (4:3 for hero and service rows, 1:1 for the about image, 220 px height for portfolio and team cards). Use images with matching proportions to avoid unwanted cropping from `object-fit: cover`.
+</Tip>
+
+## How to add custom JavaScript
+
+Create a new JS file and register it in `website.assets_frontend`:
+
+```python __manifest__.py
+'assets': {
+    'website.assets_frontend': [
+        'zonaweb_website/static/src/js/zonaweb_script.js',
+        'zonaweb_website/static/src/js/custom.js',
+    ],
+},
+```
+
+Your file must begin with the Odoo module declaration:
+
+```javascript static/src/js/custom.js
+/** @odoo-module **/
+
+document.addEventListener('DOMContentLoaded', () => {
+    // your code here
+});
+```

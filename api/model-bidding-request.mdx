@@ -1,0 +1,118 @@
+---
+title: "BiddingRequest model"
+description: "Technical overview of the zonaweb.bidding.request Odoo model, including inheritance, sequencing, and multi-company support."
+sidebarTitle: "BiddingRequest"
+---
+
+# `zonaweb.bidding.request`
+
+The `zonaweb.bidding.request` model is the core data object for the Tema Zonaweb bidding system. It stores every incoming quote request submitted through the website form and tracks its lifecycle through a four-state workflow.
+
+## Model identity
+
+| Property | Value |
+|---|---|
+| Technical name | `zonaweb.bidding.request` |
+| Description | `Solicitud de Licitación Zonaweb` |
+| Default order | `create_date desc` |
+| Inherits | `mail.thread`, `mail.activity.mixin` |
+
+## Class definition
+
+```python
+class BiddingRequest(models.Model):
+    _name = 'zonaweb.bidding.request'
+    _description = 'Solicitud de Licitación Zonaweb'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'create_date desc'
+```
+
+## Mixins
+
+Inheriting `mail.thread` and `mail.activity.mixin` adds the full Odoo chatter experience to every record.
+
+<AccordionGroup>
+  <Accordion title="mail.thread">
+    Enables the chatter panel on the form view. All field changes marked with `tracking=True` (including `state`, `company_name`, `contact_name`, and `email`) are automatically logged as chatter messages with the old and new values.
+  </Accordion>
+  <Accordion title="mail.activity.mixin">
+    Adds the **Activities** widget to the chatter, allowing users to schedule follow-up tasks such as calls, emails, and to-dos directly on a bidding request record.
+  </Accordion>
+</AccordionGroup>
+
+## Auto-sequence
+
+Every new record is assigned a unique, human-readable reference number by the `create` method override.
+
+```python
+@api.model_create_multi
+def create(self, vals_list):
+    for vals in vals_list:
+        if vals.get('name', _('Nuevo')) == _('Nuevo'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('zonaweb.bidding.request')
+    return super().create(vals_list)
+```
+
+The sequence is defined in `data/website_data.xml` with the following settings:
+
+| Setting | Value |
+|---|---|
+| Sequence code | `zonaweb.bidding.request` |
+| Prefix | `BID/` |
+| Padding | `5` |
+| Company | Global (shared across all companies) |
+
+This produces identifiers in the format `BID/00001`, `BID/00002`, and so on.
+
+<Note>
+  The `name` field defaults to `'Nuevo'` in Python and is overwritten on `create`. If you import records programmatically and supply a custom `name`, the sequence is skipped — the provided value is used as-is.
+</Note>
+
+## Multi-company support
+
+The `company_id` field scopes each record to a specific company:
+
+```python
+company_id = fields.Many2one(
+    'res.company',
+    string='Compañía',
+    default=lambda self: self.env.company
+)
+```
+
+When a new request is created — whether through the website form or the backend — it is automatically assigned to the company of the current user. The sequence record itself has `company_id = False`, making the counter global rather than per-company.
+
+## Access rights
+
+The following access rules are defined in `security/ir.model.access.csv`:
+
+| Rule | Group | Read | Write | Create | Delete |
+|---|---|:---:|:---:|:---:|:---:|
+| `user` | `base.group_user` (internal users) | ✓ | ✓ | ✓ | — |
+| `manager` | `base.group_system` (administrators) | ✓ | ✓ | ✓ | ✓ |
+| `public` | `base.group_public` (website visitors) | — | — | ✓ | — |
+
+<Warning>
+  Public users can create records (required for website form submission) but cannot read, write, or delete them. Always validate website-submitted data server-side before trusting it.
+</Warning>
+
+## Backend views
+
+The model ships with three backend views registered under the action `action_zonaweb_bidding_request`:
+
+- **List** — shows reference, company, contact, email, service type, state badge, and creation date
+- **Form** — full detail view with header buttons, statusbar, grouped fields, and chatter
+- **Kanban** — card-based view grouped by state with colour-coded state badges
+
+The backend menu item appears under **Sales → Licitaciones → Solicitudes**.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Field reference" icon="list" href="/api/model-fields">
+    Complete reference for every field on the model
+  </Card>
+  <Card title="State machine" icon="arrow-right-arrow-left" href="/api/model-states">
+    State transitions, action methods, and button visibility rules
+  </Card>
+</CardGroup>

@@ -1,0 +1,251 @@
+---
+title: "CSS variables and utility classes"
+description: "Complete reference of CSS custom properties, component classes, animation utilities, and section modifiers defined in zonaweb_style.css."
+---
+
+`zonaweb_style.css` is the single stylesheet that styles every page of the Zonaweb theme. This page catalogs all CSS variables and the key class patterns you will encounter when customizing or extending the theme.
+
+## CSS custom properties
+
+All variables are declared on `:root` and are therefore available globally.
+
+### Color palette
+
+| Variable | Value | Usage |
+|---|---|---|
+| `--navy` | `#0B1F3A` | Primary dark — headings, hero/page-hero backgrounds |
+| `--navy-mid` | `#112847` | Mid-dark navy for layered backgrounds |
+| `--navy-light` | `#1a3a5c` | Lighter navy for subtle depth |
+| `--blue` | `#0057FF` | Brand blue — buttons, links, icons, borders |
+| `--blue-hover` | `#0044CC` | Hover state for blue elements |
+| `--cyan` | `#00C2FF` | Accent cyan — gradient endpoints, animated numbers, check icons |
+| `--white` | `#FFFFFF` | Pure white |
+| `--off-white` | `#F4F7FC` | Page background for light sections |
+| `--gray-100` | `#EEF2F8` | Subtle dividers, icon backgrounds |
+| `--gray-200` | `#D8E2F0` | Form borders, card borders |
+| `--gray-500` | `#7A8FA8` | Placeholder text |
+| `--gray-700` | `#3D5270` | Muted body text |
+| `--text` | `#0B1F3A` | Default body text color |
+| `--text-light` | `#5A7090` | Secondary body text, descriptions, meta info |
+
+### Shadows
+
+| Variable | Value |
+|---|---|
+| `--shadow-sm` | `0 2px 8px rgba(0,50,120,0.08)` |
+| `--shadow-md` | `0 8px 30px rgba(0,50,120,0.12)` |
+| `--shadow-lg` | `0 20px 60px rgba(0,50,120,0.18)` |
+
+### Geometry and motion
+
+| Variable | Value | Usage |
+|---|---|---|
+| `--radius` | `12px` | Standard border radius for cards and containers |
+| `--radius-lg` | `20px` | Large border radius for prominent elements |
+| `--transition` | `0.3s cubic-bezier(0.4, 0, 0.2, 1)` | Default transition for hover effects |
+
+## Section classes
+
+### `zw-section`
+
+Apply to `<section>` elements to get 100 px vertical padding.
+
+```html
+<section class="zw-section"> ... </section>
+```
+
+### `zw-section--light`
+
+Pair with `zw-section` to apply the `--off-white` background color.
+
+```html
+<section class="zw-section zw-section--light"> ... </section>
+```
+
+### `zw-section--dark`
+
+Applies `--navy` background and white text. Used for dark sections on white pages.
+
+```html
+<section class="zw-section zw-section--dark"> ... </section>
+```
+
+### `zw-section-sm`
+
+Reduced padding variant — 60 px instead of 100 px.
+
+## Button classes
+
+| Class | Appearance |
+|---|---|
+| `btn-zw-primary` | Solid blue fill, white text — primary call to action |
+| `btn-zw-secondary` | Transparent with a blue border, blue text — secondary action |
+| `btn-zw-outline-white` | Transparent with a semi-transparent white border — used on dark/hero backgrounds |
+
+```html
+<a href="/licencias" class="btn-zw-primary">
+    Request a quote <i class="fa fa-arrow-right"></i>
+</a>
+<a href="/servicios" class="btn-zw-outline-white">View services</a>
+```
+
+## Component classes
+
+### Hero — `zw-hero`
+
+Full-viewport section with a dark navy background, CSS grid overlay, and radial glow pseudo-elements.
+
+| Class | Role |
+|---|---|
+| `zw-hero` | Outer `<section>` — sets background, min-height, and overflow |
+| `zw-hero__glow` | Decorative radial gradient orb (bottom-left) |
+| `zw-hero__grid` | Two-column CSS grid for content and visual |
+| `zw-hero__content` | Left column — label, title, description, CTA buttons, stats |
+| `zw-hero__title` | Syne 800 heading; `.accent` child spans get a blue-to-cyan gradient clip |
+| `zw-hero__label` | Pill badge above the title with a pulsing dot |
+| `zw-hero__actions` | Flex row wrapping the two CTA buttons |
+| `zw-hero__stats` | Row of three animated counter stats |
+| `zw-hero__visual` | Right column — floats on a slow `float` keyframe animation |
+| `zw-hero__carousel` | Contains `.zw-carousel-slide` items and `.zw-carousel-dots` |
+| `zw-hero__badge` | Floating badge card absolutely positioned over the carousel |
+
+### Service cards — `zw-service-card`
+
+Used in the services grid on the homepage.
+
+| Class | Role |
+|---|---|
+| `zw-service-card` | Outer card — white background, border, hover lift with `--shadow-lg` |
+| `zw-service-card__bar` | Top gradient bar that expands to full width on hover |
+| `zw-service-card__img` | Fixed-height image container (180 px) |
+| `zw-service-card__body` | Padded content area |
+| `zw-service-card__icon` | Small icon box; changes to blue-cyan gradient on hover |
+| `zw-service-card__title` | Card heading |
+| `zw-service-card__desc` | Card description text |
+| `zw-service-card__link` | "Learn more" inline link; gap expands on hover |
+
+### Portfolio cards — `zw-portfolio-card`
+
+Used in the homepage portfolio grid (2-column).
+
+| Class | Role |
+|---|---|
+| `zw-portfolio-card` | Outer card — white background, shadow, hover lift |
+| `zw-portfolio-card__img` | 220 px image area with a bottom-to-top dark gradient overlay |
+| `zw-portfolio-card__tag` | Pill badge (top-left) with blue background |
+| `zw-portfolio-card__body` | Padded text area |
+| `zw-portfolio-card__title` | Card heading |
+| `zw-portfolio-card__desc` | Muted description |
+
+### Full portfolio cards — `zw-pf-card`
+
+Used in the `/portafolio` page grid. Accepts a `data-cat` attribute for filtering.
+
+| Class | Role |
+|---|---|
+| `zw-pf-card` | Outer card |
+| `zw-pf-card__img` | 220 px image container with a bottom gradient overlay |
+| `zw-pf-card__cat` | Category pill (bottom-left of image) |
+| `zw-pf-card__body` | Padded text content |
+| `zw-pf-card__title` | Project title |
+| `zw-pf-card__desc` | Short description |
+| `zw-pf-card__meta` | Row of metadata chips (industry, duration, team size) |
+
+### Plan cards — `zw-plan-card`
+
+Pricing plan cards on a dark navy background.
+
+| Class / Modifier | Role |
+|---|---|
+| `zw-plan-card` | Base card — transparent background with a subtle white border |
+| `zw-plan-card--featured` | Highlighted variant with a blue tint background and a "Popular" ribbon above |
+| `zw-plan-card__price` | Large price figure |
+| `zw-plan-card__period` | Billing period text (`/ mes`) |
+| `zw-plan-card__name` | Plan name with a bottom separator |
+| `zw-plan-card__features` | `<ul>` of feature list items |
+| `zw-plan-card__feature` | Individual feature row with a cyan check icon |
+
+### Team cards — `zw-team-card`
+
+| Class | Role |
+|---|---|
+| `zw-team-card` | Outer card — white background, border, hover lift |
+| `zw-team-card__img` | 200 px image with a subtle scale on hover |
+| `zw-team-card__body` | Padded content area |
+| `zw-team-card__name` | Member name |
+| `zw-team-card__role` | Role/title in brand blue |
+| `zw-team-card__bio` | Short biography text |
+
+## Animation classes
+
+### Entry animations
+
+Apply these classes to elements that should animate when the page loads.
+
+| Class | Keyframe | Duration |
+|---|---|---|
+| `animate-fade-up` | `fadeUp` — slides up from 30 px below | 0.7 s |
+| `animate-fade-in` | `fadeIn` — opacity from 0 to 1 | 0.6 s |
+| `animate-slide-right` | `slideRight` — slides in from 30 px left | 0.7 s |
+| `animate-scale-in` | `scaleIn` — scales from 0.92 to 1 | 0.5 s |
+
+### Delay utilities
+
+Combine a delay class with any animation class to stagger siblings.
+
+```html
+<div class="animate-fade-up">First item — no delay</div>
+<div class="animate-fade-up delay-2">Second item — 0.2 s delay</div>
+<div class="animate-fade-up delay-4">Third item — 0.4 s delay</div>
+```
+
+| Class | `animation-delay` |
+|---|---|
+| `delay-1` | 0.1 s |
+| `delay-2` | 0.2 s |
+| `delay-3` | 0.3 s |
+| `delay-4` | 0.4 s |
+| `delay-5` | 0.5 s |
+| `delay-6` | 0.6 s |
+
+## Scroll reveal (JavaScript)
+
+On page load, `zonaweb_script.js` sets up an `IntersectionObserver` that fades cards in as they enter the viewport. The observer targets five card types:
+
+```javascript static/src/js/zonaweb_script.js
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll(
+    '.zw-service-card, .zw-portfolio-card, .zw-pf-card, .zw-plan-card, .zw-team-card'
+).forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = `opacity 0.5s ease ${i * 0.08}s, transform 0.5s ease ${i * 0.08}s`;
+    observer.observe(el);
+});
+```
+
+Each card is staggered by `index × 0.08 s`, so cards within the same grid appear sequentially rather than simultaneously. The observer fires once per element (`unobserve` is called after the first trigger).
+
+<Note>
+If you add new card components and want scroll reveal applied to them, either add their class to the selector string in `zonaweb_script.js`, or replicate the inline style pattern in your own JS file registered under `website.assets_frontend`.
+</Note>
+
+## Typography variables
+
+The theme uses two Google Fonts loaded via `@import` at the top of `zonaweb_style.css`:
+
+| Font | Weights | Role |
+|---|---|---|
+| **Syne** | 400, 600, 700, 800 | Headings (`h1`–`h6`), stat numbers, plan prices |
+| **DM Sans** | 300, 400, 500 (+ italic 400) | Body text, buttons, form labels |
+
+The `font-family` is set on `:root` and `body`, so you can override it with a custom font by redeclaring `font-family` in a later `:root` block or directly on `body`.

@@ -1,0 +1,150 @@
+---
+title: "Field reference"
+description: "Complete reference for every field on the zonaweb.bidding.request model."
+sidebarTitle: "Fields"
+---
+
+# Field reference
+
+All fields on the `zonaweb.bidding.request` model are listed below. Fields marked **required** must be provided when creating a record; omitting them raises a validation error.
+
+<Note>
+  Fields with `tracking=True` log every change to the chatter automatically. The old and new values are visible in the record's message history.
+</Note>
+
+## Identity
+
+<ParamField path="name" type="Char" required>
+  The unique human-readable reference for the bidding request (e.g. `BID/00001`).
+
+  - Readonly after creation.
+  - `copy=False` — duplicating a record resets this to `'Nuevo'` so a new sequence number is generated.
+  - Default: `'Nuevo'` (overwritten on save by the `ir.sequence` named `zonaweb.bidding.request`).
+  - The sequence uses prefix `BID/` with 5-digit zero-padded padding.
+</ParamField>
+
+<ParamField path="company_id" type="Many2one → res.company">
+  The company this request belongs to.
+
+  - Default: the company of the currently authenticated user (`self.env.company`).
+  - Used to scope records in multi-company Odoo installations.
+  - The sequence counter is global (not per-company).
+</ParamField>
+
+## Contact information
+
+<ParamField path="company_name" type="Char" required>
+  The name of the requesting company or organisation.
+
+  - Tracked: changes are logged in the chatter.
+</ParamField>
+
+<ParamField path="contact_name" type="Char" required>
+  Full name of the primary contact person at the requesting company.
+
+  - Tracked: changes are logged in the chatter.
+</ParamField>
+
+<ParamField path="email" type="Char" required>
+  Email address of the primary contact.
+
+  - Tracked: changes are logged in the chatter.
+  - Used as the recipient address in the confirmation email template (`email_template_bidding_confirmation`).
+</ParamField>
+
+<ParamField path="phone" type="Char">
+  Phone number of the primary contact. Optional.
+</ParamField>
+
+## Service details
+
+<ParamField path="service_type" type="Selection" required>
+  The category of service being requested.
+
+  | Key | Label |
+  |---|---|
+  | `software` | Desarrollo de Software |
+  | `infrastructure` | Infraestructura de Redes |
+  | `support` | Soporte Técnico |
+  | `security` | Seguridad Informática |
+  | `consulting` | Consultoría |
+  | `other` | Otro |
+</ParamField>
+
+<ParamField path="project_description" type="Text" required>
+  A free-text description of the project or engagement scope. Displayed in the form view and included in internal reviews.
+</ParamField>
+
+<ParamField path="specific_requirements" type="Text">
+  Any additional or specific technical requirements the requester wishes to communicate. Optional.
+</ParamField>
+
+## Budget and timeline
+
+<ParamField path="estimated_budget" type="Float">
+  The requester's estimated budget for the project, expressed in the company's default currency. Optional; not validated or enforced.
+</ParamField>
+
+<ParamField path="estimated_timeline" type="Selection">
+  The requester's preferred delivery schedule. Optional.
+
+  | Key | Label |
+  |---|---|
+  | `normal` | Normal (2-4 semanas) |
+  | `urgent` | Urgente (1-2 semanas) |
+  | `flexible` | Flexible (1-3 meses) |
+</ParamField>
+
+## Company context
+
+<ParamField path="company_sector" type="Selection">
+  The industry sector of the requesting company. Optional; used for internal categorisation.
+
+  | Key | Label |
+  |---|---|
+  | `retail` | Retail |
+  | `manufacturing` | Manufactura |
+  | `services` | Servicios |
+  | `technology` | Tecnología |
+  | `healthcare` | Salud |
+  | `education` | Educación |
+  | `finance` | Finanzas |
+  | `other` | Otro |
+</ParamField>
+
+## Workflow state
+
+<ParamField path="state" type="Selection">
+  The current lifecycle state of the request.
+
+  | Key | Label | Meaning |
+  |---|---|---|
+  | `draft` | Borrador | Newly created; pending review |
+  | `confirmed` | Confirmado | Acknowledged and under consideration |
+  | `approved` | Aprobado | Accepted; a proposal will be prepared |
+  | `rejected` | Rechazado | Declined |
+
+  - Default: `'draft'`.
+  - Tracked: every state change is logged in the chatter with the old and new values.
+  - Rendered as a `statusbar` widget in the form view header and as a colour-coded `badge` widget in list and kanban views.
+
+  See the [state machine reference](/api/model-states) for transition rules and action methods.
+</ParamField>
+
+## Field summary table
+
+| Field | Type | Required | Tracked | Notes |
+|---|---|:---:|:---:|---|
+| `name` | Char | ✓ | — | Auto-assigned by sequence; readonly |
+| `company_name` | Char | ✓ | ✓ | |
+| `contact_name` | Char | ✓ | ✓ | |
+| `email` | Char | ✓ | ✓ | Used for confirmation email |
+| `phone` | Char | — | — | |
+| `service_type` | Selection | ✓ | — | 6 options |
+| `project_description` | Text | ✓ | — | |
+| `specific_requirements` | Text | — | — | |
+| `estimated_budget` | Float | — | — | |
+| `estimated_timeline` | Selection | — | — | 3 options |
+| `company_sector` | Selection | — | — | 8 options |
+| `state` | Selection | — | ✓ | Default `draft` |
+| `company_id` | Many2one | — | — | Default current company |

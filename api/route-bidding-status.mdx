@@ -1,0 +1,143 @@
+---
+title: 'POST /api/bidding-status'
+description: 'Returns the current status and last-update timestamp of a bidding request.'
+sidebarTitle: '/api/bidding-status'
+icon: 'circle-check'
+---
+
+Returns the current state and last-update timestamp of a `zonaweb.bidding.request` record identified by its sequence name.
+
+## Endpoint
+
+```
+POST /api/bidding-status
+```
+
+| Property | Value |
+|----------|-------|
+| Type | `json` (JSON-RPC 2.0) |
+| Auth | `public` |
+| Website context | no |
+| CSRF | not applicable (JSON-RPC) |
+| Content-Type | `application/json` |
+
+<Info>
+This route uses Odoo's `type='json'` dispatcher, which follows the JSON-RPC 2.0 envelope format. The actual parameters are nested inside the `params` key of the request body.
+</Info>
+
+## Request body
+
+Wrap your parameters in the standard JSON-RPC 2.0 envelope:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "call",
+  "params": {
+    "bidding_id": "BID/00001"
+  }
+}
+```
+
+### Parameters
+
+<ParamField body="bidding_id" type="string" required>
+  The sequence name of the bidding request to look up (e.g. `BID/00001`). This value is returned in the thank-you page after a successful form submission via [POST /submit-bidding](/api/route-submit-bidding).
+</ParamField>
+
+## Response
+
+Odoo wraps all JSON-RPC responses in an envelope. The value returned by the controller appears in the `result` key on success.
+
+### Success
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "result": {
+    "status": "confirmed",
+    "last_update": "2026-03-16 14:32:05"
+  }
+}
+```
+
+<ResponseField name="status" type="string">
+  Current state of the bidding record. One of:
+
+  | Value | Description |
+  |-------|-------------|
+  | `draft` | Received, not yet reviewed |
+  | `confirmed` | Under review |
+  | `approved` | Request approved |
+  | `rejected` | Request rejected |
+</ResponseField>
+
+<ResponseField name="last_update" type="string">
+  Date and time of the last write to the record, formatted as `YYYY-MM-DD HH:MM:SS` (server local time).
+</ResponseField>
+
+### Error responses
+
+Errors are returned inside `result` (not in the JSON-RPC `error` field) as plain objects:
+
+| Scenario | Response body (`result`) |
+|----------|--------------------------|
+| `bidding_id` missing or empty | `{"error": "Se requiere ID de licitación"}` |
+| No record found with that ID | `{"error": "Licitación no encontrada"}` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "result": {
+    "error": "Licitación no encontrada"
+  }
+}
+```
+
+<Note>
+Application-level errors (missing ID, record not found) are returned as a `result` object with an `error` key, **not** as a JSON-RPC protocol error. Check for the presence of the `error` key in `result` to detect these conditions.
+</Note>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://your-odoo-instance.com/api/bidding-status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "call",
+    "params": {
+      "bidding_id": "BID/00001"
+    }
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://your-odoo-instance.com/api/bidding-status",
+    json={
+        "jsonrpc": "2.0",
+        "method": "call",
+        "params": {
+            "bidding_id": "BID/00001"
+        },
+    },
+)
+
+data = response.json()
+result = data.get("result", {})
+
+if "error" in result:
+    print("Error:", result["error"])
+else:
+    print("Status:", result["status"])
+    print("Last update:", result["last_update"])
+```
+
+</CodeGroup>
